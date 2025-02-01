@@ -1,4 +1,4 @@
-import Contact from "../../src/models/contact"; // або ваш модель контакту
+import Contact from "../models/contact.js";
 
 export async function deleteContact(contactId) {
   try {
