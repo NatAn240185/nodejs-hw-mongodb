@@ -1,15 +1,13 @@
 import express from "express";
-import * as contactsController from "../controllers/contacts.js";
+import { deleteContact, getAllContacts } from "../controllers/contacts.js";
 
-const router = express.Router(); // Оголошуємо router перед використанням
+const router = express.Router();
 
-// Отримати всі контакти
-router.get("/", contactsController.getAllContacts);
-
-// DELETE-Route для видалення контакту
-router.delete("/:contactId", contactsController.deleteContact);
+router.get("/", getAllContacts); // Отримати всі контакти
+router.delete("/:contactId", deleteContact); // Видалити контакт
 
 export default router;
+
 
 
 
