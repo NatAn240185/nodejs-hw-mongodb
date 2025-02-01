@@ -20,4 +20,17 @@ export async function deleteContact(req, res, next) {
   }
 }
 
+// Отримати всі контакти
+export async function getAllContacts(req, res, next) {
+  try {
+    const contacts = await contactsService.getAllContacts();
+    res.status(200).json({
+      status: 200,
+      message: "Contacts retrieved successfully",
+      data: contacts,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
