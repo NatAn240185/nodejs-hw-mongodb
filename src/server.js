@@ -1,32 +1,17 @@
-import express from 'express';
-import cors from 'cors';
-import pino from 'pino';
-import dotenv from 'dotenv';
-import { getContacts, getContact } from './controllers/contactsController.js';
+import express from "express";
+import contactsRouter from "./routers/contacts.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
+import { notFoundHandler } from "./middlewares/notFoundHandler.js";
 
-dotenv.config();
+const app = express();
 
-const logger = pino({ level: 'info' });
+app.use(express.json());
+app.use("/contacts", contactsRouter);
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export function setupServer() {
-  const app = express();
-
-  // Middleware
-  app.use(cors());
-  app.use(express.json());
-
-  // Routes
-  app.get('/contacts', getContacts);
-  app.get('/contacts/:contactId', getContact); // Реєстрація роута
-
-  // Handle non-existing routes
-  app.use((req, res) => {
-    res.status(404).json({ message: 'Not found' });
-  });
-
-  // Start server
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    logger.info(`Server is running on port ${PORT}`);
-  });
+  return app;
 }
+
+

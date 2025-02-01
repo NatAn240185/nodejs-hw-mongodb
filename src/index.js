@@ -1,13 +1,11 @@
-import { setupServer } from './server.js';
-import { initMongoConnection } from './db/initMongoConnection.js';
+import express from "express";
+import contactRouter from "./routers/contacts.js";
 
-async function startApp() {
-  try {
-    await initMongoConnection(); // Встановлення підключення до MongoDB
-    setupServer(); // Запуск сервера
-  } catch (error) {
-    console.error('Failed to start the application:', error.message);
-  }
-}
+const app = express();
 
-startApp();
+app.use(express.json()); // Middleware для парсингу JSON
+app.use("/contacts", contactRouter); // Підключення маршруту для контактів
+
+app.listen(3000, () => {
+    console.log("Server is running on http://localhost:3000");
+});
