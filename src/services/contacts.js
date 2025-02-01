@@ -1,19 +1,13 @@
-import { Contact } from '../models/contact.js';
+import Contact from "../models/contact.js"; // або ваш модель контакту
 
-export async function getAllContacts() {
+export async function deleteContact(contactId) {
   try {
-    const contacts = await Contact.find();
-    return contacts;
-  } catch (error) {
-    throw new Error('Error fetching contacts');
-  }
-}
+    // Використовуємо метод findByIdAndDelete для пошуку та видалення контакту
+    const deletedContact = await Contact.findByIdAndDelete(contactId);
 
-export async function getContactById(contactId) {
-  try {
-    const contact = await Contact.findById(contactId);
-    return contact;
+    // Повертаємо результат (якщо контакт не знайдено, він буде null)
+    return deletedContact;
   } catch (error) {
-    throw new Error('Error fetching contact');
+    throw new Error("Database error during deletion");
   }
 }
