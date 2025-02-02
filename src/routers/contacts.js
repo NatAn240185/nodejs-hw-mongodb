@@ -7,4 +7,3 @@ router.get("/", getAllContacts); // Отримати всі контакти
 router.delete("/:contactId", deleteContact); // Видалити контакт
 
 export default router;
-
