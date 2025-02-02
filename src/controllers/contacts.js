@@ -1,37 +1,22 @@
-import * as contactsService from "../services/contacts.js";
-import createError from "http-errors"; // для обробки помилок
-
-// Видалити контакт за ID
-export async function deleteContact(req, res, next) {
-  const { contactId } = req.params;
-
-  try {
-    // Викликаємо сервіс для видалення контакту
-    const deletedContact = await contactsService.deleteContact(contactId);
-
-    if (!deletedContact) {
-      throw createError(404, "Contact not found");
-    }
-
-    // Якщо контакт було успішно видалено, повертаємо статус 204 (без тіла відповіді)
-    res.status(204).send();
-  } catch (error) {
-    next(error);
-  }
-}
+import Contact from "../models/contact.js";
 
 // Отримати всі контакти
-export async function getAllContacts(req, res, next) {
+export async function getAllContacts() {
   try {
-    const contacts = await contactsService.getAllContacts();
-    res.status(200).json({
-      status: 200,
-      message: "Contacts retrieved successfully",
-      data: contacts,
-    });
+    const contacts = await Contact.find();  // Отримуємо всі контакти
+    return contacts;
   } catch (error) {
-    next(error);
+    throw new Error("Database error while fetching contacts");
   }
 }
 
+// Видалити контакт за ID
+export async function deleteContact(contactId) {
+  try {
+    const deletedContact = await Contact.findByIdAndDelete(contactId);
+    return deletedContact;
+  } catch (error) {
+    throw new Error("Database error during deletion");
+  }
+}
 
