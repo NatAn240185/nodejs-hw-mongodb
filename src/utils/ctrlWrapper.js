@@ -1,8 +1,10 @@
-export const ctrlWrapper = (ctrl) => async (req, res, next) => {
+export function ctrlWrapper(controller) {
+  return async (req, res, next) => {
     try {
-      await ctrl(req, res, next);
-    } catch (err) {
-      next(err);
+      await controller(req, res, next);
+    } catch (error) {
+      next(error);
     }
   };
+}
   
