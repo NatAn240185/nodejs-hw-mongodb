@@ -1,22 +1,22 @@
 import Contact from "../models/contact.js";
 
-// Отримати всі контакти
-export async function getAllContacts() {
-  try {
-    const contacts = await Contact.find();
-    return contacts;
-  } catch (error) {
-    throw new Error("Database error while fetching contacts");
-  }
-}
+export const getAllContacts = async () => {
+  return Contact.find();
+};
 
-// Видалити контакт за ID
-export async function deleteContact(contactId) {
-  try {
-    const deletedContact = await Contact.findByIdAndDelete(contactId);
-    return deletedContact; // null, якщо контакту немає
-  } catch (error) {
-    throw new Error("Database error during deletion");
-  }
-}
+export const getContactById = async (contactId) => {
+  return Contact.findById(contactId);
+};
+
+export const createContact = async (contact) => {
+  return Contact.create(contact);
+};
+
+export const deleteContact = async (contactId) => {
+  return Contact.findByIdAndDelete(contactId);
+};
+
+export const updateContact = async (contactId, contact) => {
+  return Contact.findByIdAndUpdate(contactId, contact, { new: true });
+};
 
