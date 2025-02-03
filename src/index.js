@@ -1,11 +1,8 @@
-import express from "express";
-import contactRouter from "./routers/contacts.js";
+import { initMongoConnection } from "./db/initMongoConnection.js";
+import { setupServer } from "./server.js";
+import 'dotenv/config';
 
-const app = express();
 
-app.use(express.json()); // Middleware для парсингу JSON
-app.use("/contacts", contactRouter); // Підключення маршруту для контактів
-
-app.listen(3000, () => {
-    console.log("Server is running on http://localhost:3000");
+initMongoConnection().then(() => {
+  setupServer();
 });
