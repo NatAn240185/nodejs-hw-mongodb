@@ -1,6 +1,6 @@
 import { userMon } from "../models/user.js";
 import createHttpError from 'http-errors';
-import bcrypt from "bcrypt.js";
+import bcrypt from "bcryptjs";
 import { sessionMon } from "../models/session.js";
 import crypto from "node:crypto";
 
