@@ -11,6 +11,7 @@ import { authenticate } from "./middlewares/authenticate.js";
 
 const app = express();
 
+
 app.use(cors());
 
 app.use(cookieParser());

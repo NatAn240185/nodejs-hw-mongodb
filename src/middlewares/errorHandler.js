@@ -9,4 +9,3 @@ export function errorHandler(error, req, res, next) {
 
   res.status(500).send({ status: 500, message: 'Something went wrong' });
 }
-  
