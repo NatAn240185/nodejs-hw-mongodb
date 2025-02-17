@@ -5,12 +5,19 @@ import pino from 'pino-http';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
 import routes from './routers/contacts.js';
+import cookieParser from "cookie-parser";
+import authRouter from "./routers/auth.js";
+import { authenticate } from "./middlewares/authenticate.js";
 
 const app = express();
 
 app.use(cors());
 
-app.use(routes);
+app.use(cookieParser());
+
+app.use('/auth', authRouter);
+
+app.use(authenticate, routes);
 
 app.use(
     pino({
@@ -30,8 +37,6 @@ app.use('*', notFoundHandler);
 
 app.use(errorHandler);
 
-
-
 export function setupServer() {
         try {
             const PORT = process.env.PORT || 3000;
@@ -42,7 +47,3 @@ export function setupServer() {
         console.error(error);
     }
 }
-
-
-
-

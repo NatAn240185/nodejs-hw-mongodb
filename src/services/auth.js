@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { sessionMon } from "../models/session.js";
 import crypto from "node:crypto";
 
+
 export async function registerUser(payload) {
     const user = await userMon.findOne({ email: payload.email });
     
