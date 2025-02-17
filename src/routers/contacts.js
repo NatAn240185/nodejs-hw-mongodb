@@ -12,7 +12,7 @@ const jsonParser = express.json();
 router.get('/contacts', ctrlWrapper(getContactsControllers));
 
 router.get('/contacts/:contactId', isValidId, ctrlWrapper(getContactsIdControllers));
-
+git status
 router.post('/contacts', jsonParser, validateBody(contactSchemaJoi), ctrlWrapper(createContactController));
 
 router.delete('/contacts/:contactId', isValidId, ctrlWrapper(deleteContactController));

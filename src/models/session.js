@@ -3,10 +3,8 @@ import mongoose from "mongoose";
 const sessionSchema = new mongoose.Schema(
   {
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Посилання на модель User
+      type: String,
       required: true,
-      index: true, // Оптимізація запитів
     },
     accessToken: {
       type: String,
