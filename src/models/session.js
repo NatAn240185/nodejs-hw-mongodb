@@ -9,4 +9,3 @@ const sessionSchema = new mongoose.Schema({
 });
 
 export const sessionMon = mongoose.model("Session", sessionSchema);
-

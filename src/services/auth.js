@@ -1,4 +1,4 @@
-import User from "../models/user.js";
+import userMon from "../models/user.js";
 import createHttpError from 'http-errors';
 import bcrypt from "bcryptjs";
 import { sessionMon } from "../models/session.js";
