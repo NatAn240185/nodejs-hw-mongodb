@@ -1,4 +1,9 @@
 import { loginUser, logoutUser, refreshSession, registerUser } from "../services/auth.js";
+import createHttpError from "http-errors";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import User from "../models/user.js";
+import { sessionMon } from "../models/session.js";
 
 export async function registerController(req, res) {
     const payload = {
@@ -29,7 +34,7 @@ export async function loginController(req, res) {
     
     res.send({
         status: 200,
-        message: 'Successfully logged in an user!',
+        message: 'Successfully logged in a user!',
         data: {
             accessToken: session.accessToken,
         }
@@ -65,10 +70,52 @@ export async function refreshController(req, res) {
     
     res.send({
         status: 200,
-        message: 'Successfully refreshed a session!!',
+        message: 'Successfully refreshed a session!',
         data: {
             accessToken: session.accessToken,
         }
     });
-    
+}
+
+//  Додаємо новий контролер для скидання пароля
+export async function resetPasswordController(req, res, next) {
+    try {
+        const { token, password } = req.body;
+
+        // Перевіряємо, чи є токен
+        if (!token) {
+            throw createHttpError(401, "Token is expired or invalid.");
+        }
+
+        // Розшифровуємо токен
+        let payload;
+        try {
+            payload = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (error) {
+            throw createHttpError(401, "Token is expired or invalid.");
+        }
+
+        // Шукаємо користувача за email, який записаний у токені
+        const user = await User.findOne({ email: payload.email });
+
+        if (!user) {
+            throw createHttpError(404, "User not found!");
+        }
+
+        // Хешуємо новий пароль
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+        // Видаляємо всі сесії користувача
+        await Session.deleteMany({ userId: user._id });
+
+        res.json({
+            status: 200,
+            message: "Password has been successfully reset.",
+            data: {}
+        });
+    } catch (error) {
+        next(error);
+    }
 }
