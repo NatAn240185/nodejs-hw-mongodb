@@ -21,7 +21,7 @@ app.use(
         target: 'pino-pretty',
       },
     }),
-  );
+);
 
 app.get('/', (req, res) => {
     res.json({
@@ -32,21 +32,15 @@ app.get('/', (req, res) => {
 app.use('*', notFoundHandler);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
-
-// Видаляємо setupServer() та просто запускаємо сервер тут
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
 export function setupServer() {
-  try {
-      const PORT = process.env.PORT || 3000;
-      app.listen(PORT, () => {
-          console.log(`Server is running on port ${PORT}`);
-      });
-  } catch (error) {
-      console.error(error);
-  }
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+  });
 }
+
+
+export default app; 
 
 
 
