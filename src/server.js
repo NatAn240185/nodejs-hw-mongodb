@@ -12,8 +12,9 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.use("/api/contacts", contactRoutes); // Додаємо префікс /api/contacts
-app.use("/api/auth", authRoutes); //  Фікс шляху для auth
+app.use("/contacts", contactRoutes); // Видаляємо /api
+app.use("/auth", authRoutes); // Видаляємо /api
+
 
 app.use(
     pino({

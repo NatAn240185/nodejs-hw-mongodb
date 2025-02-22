@@ -10,7 +10,7 @@ import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import { isValidId } from '../middlewares/isValidId.js';
 import { validateBody } from '../middlewares/validateBody.js';
 import { contactSchemaJoi, replaceContactSchemaJoi } from "../validation/contactValidation.js";
-import upload from "../middlewares/upload.js";
+import upload from "../middlewares/upload.js"; // Переконайся, що шлях правильний
 
 const router = express.Router();
 

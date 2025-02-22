@@ -7,7 +7,7 @@ import {
     logoutController, 
     refreshController, 
     registerController, 
-    resetPasswordController // ✅ Додаємо новий контролер
+    resetPasswordController //  Додаємо новий контролер
 } from "../controllers/auth.js";
 
 const router = express.Router();

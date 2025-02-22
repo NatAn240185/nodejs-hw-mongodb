@@ -3,7 +3,9 @@ import { sendResetEmailController, validateEmail } from "../controllers/authCont
 
 const router = express.Router();
 
-// Маршрут для скидання пароля
+
 router.post("/auth/send-reset-email", validateEmail, sendResetEmailController);
+router.post("/auth/reset-pwd", validateBody(resetPasswordSchema), resetPasswordController);
+
 
 export default router;
