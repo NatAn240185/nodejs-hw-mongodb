@@ -1,24 +1,26 @@
-import express from "express";
-import { validateBody } from "../middlewares/validateBody.js";
-import { loginSchema, registerSchema, resetPasswordSchema } from "../validation/auth.js";
-import { ctrlWrapper } from "../utils/ctrlWrapper.js";
-import { 
-    loginController, 
-    logoutController, 
-    refreshController, 
-    registerController, 
-    resetPasswordController //  Додаємо новий контролер
-} from "../controllers/auth.js";
+import { Router } from 'express';
+import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+import { registerUserSchema } from '../validation/auth.js';
+import { registerUserController, loginUserController, logoutUserController, refreshUserSessionController } from '../controllers/auth.js';
+import { validateBody } from '../middlewares/validateBody.js';
+import { loginUserSchema} from '../validation/auth.js';
 
-const router = express.Router();
-const jsonParser = express.json();
 
-router.post("/register", jsonParser, validateBody(registerSchema), ctrlWrapper(registerController));
-router.post("/login", jsonParser, validateBody(loginSchema), ctrlWrapper(loginController));
-router.post("/logout", ctrlWrapper(logoutController));
-router.post("/refresh", ctrlWrapper(refreshController));
+const router = Router();
 
-// Додаємо новий ендпоінт для скидання пароля
-router.post("/auth/reset-pwd", jsonParser, validateBody(resetPasswordSchema), ctrlWrapper(resetPasswordController));
+router.post(
+  '/register',
+  validateBody(registerUserSchema),
+  ctrlWrapper(registerUserController),
+);
+router.post(
+  '/login',
+  validateBody(loginUserSchema),
+  ctrlWrapper(loginUserController),
+);
+
+router.post('/logout', ctrlWrapper(logoutUserController));
+
+router.post('/refresh', ctrlWrapper(refreshUserSessionController));
 
 export default router;

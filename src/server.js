@@ -1,47 +1,43 @@
-import cors from 'cors';
 import express from 'express';
-import 'dotenv/config';
 import pino from 'pino-http';
+import cors from 'cors';
+import router from './routers/index.js';
+import cookieParser from 'cookie-parser';
+import { getEnvVar } from './utils/getEnvVar.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
-import contactRoutes from './routers/contacts.js';
-import authRoutes from './routers/auth.js'; // Додаємо імпорт
 
-const app = express();
+const PORT = Number(getEnvVar('PORT', '3000'));
 
-app.use(express.json());
-app.use(cors());
+export const startServer = () => {
+    const app = express();
+    app.use(express.json({
+        type: ['application/json', 'application/vnd.api+json'],
+        limit: '100kb',
+}));
+    app.use(cors());
+    app.use(cookieParser());
+    app.use(
+        pino({
+            transport: {
+                target: 'pino-pretty',
+            },
+        }),
+    );
 
-app.use("/contacts", contactRoutes); // Видаляємо /api
-app.use("/auth", authRoutes); // Видаляємо /api
-
-
-app.use(
-    pino({
-      transport: {
-        target: 'pino-pretty',
-      },
-    }),
-);
-
-app.get('/', (req, res) => {
-    res.json({
-      message: 'Hello World!',
+    app.get('/', (req, res) => {
+        res.json({
+            message: 'Hello world!',
+        });
     });
-});
 
-app.use('*', notFoundHandler);
-app.use(errorHandler);
+    app.use(router);
 
-export function setupServer() {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-  });
-}
+    app.use('*', notFoundHandler);
 
+    app.use(errorHandler);
 
-export default app; 
-
-
-
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+};
