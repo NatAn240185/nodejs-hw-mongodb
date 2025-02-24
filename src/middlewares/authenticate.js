@@ -3,38 +3,35 @@ import { sessionMon } from '../models/session.js';
 import { userMon } from '../models/user.js';
 
 export async function authenticate(req, res, next) {
-    try {
-        const { authorization } = req.headers;
+    const { authorization } = req.headers;
 
-        if (!authorization) {
-            return next(createHttpError(401, "Authorization header is missing"));
-        }
+    if (typeof authorization !== "string") {
+        return next(createHttpError(401, "Access token expired"));
+    }
 
-        const [bearer, accessToken] = authorization.split(" ");
+    const [bearer, accessToken] = authorization.split(" ", 2);
 
-        if (bearer !== "Bearer" || !accessToken) {
-            return next(createHttpError(401, "Invalid token format"));
-        }
+    if (bearer !== "Bearer" || typeof accessToken !== "string") {
+        return next(createHttpError(401, "Access token expired"));
+    }
 
-        const session = await sessionMon.findOne({ accessToken });
+    const session = await sessionMon.findOne({ accessToken });
+    
+    if (session === null) {
+        return next(createHttpError(401, "Session not found"));
+    }
 
-        if (!session) {
-            return next(createHttpError(401, "Session not found"));
-        }
-
-        if (session.accessTokenValidUntil < new Date()) {
-            return next(createHttpError(401, "Access token expired"));
-        }
+    if (session.accessTokenValidUntil < new Date()) {
+        return next(createHttpError(401, "Access token expired"));
+    }
 
         const user = await userMon.findById(session.userId);
 
-        if (!user) {
+        if (user === null) {
             return next(createHttpError(401, "User not found"));
         }
 
         req.user = user;
+        
         next();
-    } catch (error) {
-        next(createHttpError(500, "Internal server error"));
     }
-}
