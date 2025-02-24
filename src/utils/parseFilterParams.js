@@ -1,30 +1,25 @@
-const parseContactType = (contactType) => {
-    const isString = typeof contactType === 'string';
-    if (!isString) return;
-    const isContactType = (contactType) => ['work', 'home', 'personal'].includes(contactType);
-    if (isContactType(contactType)) return contactType;
-  };
-  
-  const parseIsFavourite = (isFavourite) => {
-    if (typeof isFavourite === 'boolean') { return isFavourite; }
-  
-  
-          if (typeof isFavourite === 'string') {
-          if (isFavourite.toLowerCase() === 'true') return true;
-          if (isFavourite.toLowerCase() === 'false') return false;
-      }
-      return undefined;
-  };
-  
-  export const parseFilterParams = (query) => {
-    const { contactType, isFavourite } = query;
-  
-    const parsedContactType = parseContactType(contactType);
-    const parsedIsFavourite = parseIsFavourite(isFavourite);
-  
-  
-    return {
-      contactType: parsedContactType,
-      isFavourite: parsedIsFavourite,
-      };
-  };
+function parseNumber(value, defaultValue) {
+  if (typeof value !== "string") {
+      return defaultValue;
+  }
+
+  const parsedValue = parseInt(value); 
+
+  if (Number.isNaN(parsedValue) === true) {
+      return defaultValue;
+  }
+
+  return parsedValue;
+}
+
+export function parsePaginationParams(query) {
+  const { page, perPage } = query;
+
+  const parsedPage = parseNumber(page, 1);
+  const parsedPerPage = parseNumber(perPage, 10);
+
+  return {
+      page: parsedPage,
+      perPage: parsedPerPage,
+  }; 
+}

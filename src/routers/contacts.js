@@ -1,23 +1,24 @@
-import { Router } from 'express';
-import { getContactsController, getContactByIdController, createContactController, deleteContactController, patchContactController, } from '../controllers/contacts.js';
+import express from 'express';
+import { getContactsControllers, getContactsIdControllers, createContactController, deleteContactController, updateContactController } from '../controllers/contacts.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
-import { validateBody } from '../middlewares/validateBody.js';
-import { createContactSchema, updateContactSchema } from '../validation/contactValidation.js';
 import { isValidId } from '../middlewares/isValidId.js';
-import { authenticate } from '../middlewares/authenticate.js';
+import { validateBody } from '../middlewares/validateBody.js';
+import { contactSchemaJoi, replaceContactSchemaJoi } from "../validation/contactValidation.js";
+import { upload } from '../middlewares/upload.js';
 
-const router = Router();
+const router = express.Router();
+const jsonParser = express.json();
 
-router.use(authenticate);
-router.get('/', ctrlWrapper(getContactsController));
+router.get('/contacts', ctrlWrapper(getContactsControllers));
 
-router.get('/:contactId', isValidId, ctrlWrapper(getContactByIdController));
+router.get('/contacts/:contactId', isValidId, ctrlWrapper(getContactsIdControllers));
 
-router.post('/', validateBody(createContactSchema), ctrlWrapper(createContactController));
+router.post('/contacts', upload.single('photo'), jsonParser, validateBody(contactSchemaJoi), ctrlWrapper(createContactController));
 
-router.delete('/:contactId', isValidId, ctrlWrapper(deleteContactController));
+router.delete('/contacts/:contactId', isValidId, ctrlWrapper(deleteContactController));
 
-router.patch('/:contactId', isValidId, validateBody(updateContactSchema), ctrlWrapper(patchContactController));
+router.patch('/contacts/:contactId', upload.single('photo'), isValidId, jsonParser, validateBody(replaceContactSchemaJoi), ctrlWrapper(updateContactController));
+
 
 
 export default router;
