@@ -34,4 +34,4 @@ export const contactSchema = new mongoose.Schema({
     versionKey: false,
   },
 );
-export const ContactsCollection = mongoose.model('contacts', contactSchema);
+export const Contact = mongoose.model("Contact", contactSchema);

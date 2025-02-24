@@ -1,85 +1,117 @@
-import { randomBytes } from 'crypto';
-import bcrypt from 'bcryptjs';
-import createHttpError from 'http-errors';
-import { UsersCollection } from '../models/user.js';
-import { FIFTEEN_MINUTES, ONE_DAY } from '../constants/index.js';
-import { SessionsCollection } from '../models/session.js';
+import { userMon } from "../models/user.js";
+import createHttpError from "http-errors";
+import bcrypt from "bcryptjs";
+import { sessionMon } from "../models/session.js";
+import crypto from "node:crypto";
+import jwt from "jsonwebtoken";
+import { sendMail } from "../utils/sendMail.js";
 
-export const registerUser = async (payload) => {
-  const user = await UsersCollection.findOne({ email: payload.email });
-    if (user) throw createHttpError(409, 'Email in use');
+
+export async function registerUser(payload) {
+    const user = await userMon.findOne({ email: payload.email });
     
-  const encryptedPassword = await bcrypt.hash(payload.password, 10);
-    return await UsersCollection.create({
-    ...payload,
-    password: encryptedPassword,});
-};
+    if (user !== null) {
+        throw createHttpError(409, "Email in use");
+    }
+
+    payload.password = await bcrypt.hash(payload.password, 10);
+
+    return userMon.create(payload);
+}
 
 
-export const loginUser = async (payload) => {
-  const user = await UsersCollection.findOne({ email: payload.email });
-  if (!user) {
-    throw createHttpError(404, 'User not found');
-  }
-  const isEqual = await bcrypt.compare(payload.password, user.password); 
+export async function loginUser(email, password) {
+    const user = await userMon.findOne({ email });
+    
+    if (user === null) {
+        throw createHttpError(401, "Email or password is incorrect");
+    }
 
-  if (!isEqual) {
-    throw createHttpError(401, 'Unauthorized');
-  }
+    const isMatch = await bcrypt.compare(password, user.password);
 
-  await SessionsCollection.deleteOne({ userId: user._id });
+    if (isMatch !== true) {
+    throw createHttpError(401, "Email or password is incorrect");
+    }
 
-  const accessToken = randomBytes(30).toString('base64');
-  const refreshToken = randomBytes(30).toString('base64');
+    await sessionMon.deleteOne({ userId: user._id });
 
-  return await SessionsCollection.create({
-    userId: user._id,
-    accessToken,
-    refreshToken,
-    accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
-    refreshTokenValidUntil: new Date(Date.now() + ONE_DAY),
-  });
-};
+    return sessionMon.create({
+        userId: user._id,
+        accessToken: crypto.randomBytes(30).toString("base64"),
+        refreshToken: crypto.randomBytes(30).toString("base64"),
+        accessTokenValidUntil: new Date(Date.now() + 15 * 60 * 1000),
+        refreshTokenValidUntil: new Date(Date.now() + 720 * 60 * 60 + 1000),
+    });
+}
 
-export const logoutUser = async (sessionId) => {
-  await SessionsCollection.deleteOne({ _id: sessionId });
-};
+export async function logoutUser(sessionId) {
+    await sessionMon.deleteOne({ _id: sessionId }); 
+}
 
-const createSession = () => {
-  const accessToken = randomBytes(30).toString('base64');
-  const refreshToken = randomBytes(30).toString('base64');
+export async function refreshSession(sessionId, refreshToken) {
+    const session = await sessionMon.findById(sessionId);
 
-  return {
-    accessToken,
-    refreshToken,
-    accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
-    refreshTokenValidUntil: new Date(Date.now() + ONE_DAY),
-  };
-};
+    if (session === null) {
+        throw createHttpError(401, "Session not found");
+    }
 
-export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
-  const session = await SessionsCollection.findOne({
-    _id: sessionId,
-    refreshToken,
-  });
+    if (session.refreshToken !== refreshToken) {
+        throw createHttpError(401, "Session not found");
+    }
 
-  if (!session) {
-    throw createHttpError(401, 'Session not found');
-  }
+    if (session.refreshTokenValidUntil < new Date()) {
+        throw createHttpError(401, "Refresh token is expired");
+    }
 
-  const isSessionTokenExpired =
-    new Date() > new Date(session.refreshTokenValidUntil);
+    await sessionMon.deleteOne({ _id: session._id }); 
 
-  if (isSessionTokenExpired) {
-    throw createHttpError(401, 'Session token expired');
-  }
-  
-  const newSession = createSession();
+        return sessionMon.create({
+        userId: session.userId,
+        accessToken: crypto.randomBytes(30).toString("base64"),
+        refreshToken: crypto.randomBytes(30).toString("base64"),
+        accessTokenValidUntil: new Date(Date.now() + 180 * 60 * 1000),
+        refreshTokenValidUntil: new Date(Date.now() + 720 * 60 * 60 + 1000),
+        });
+    
+}
 
-  await SessionsCollection.deleteOne({ _id: sessionId, refreshToken });
+export async function sendResetPassword(email) {
+    const user = await userMon.findOne({ email });
+    
+    if (user === null) {
+        throw createHttpError(404, "User not found!");
+    }
 
-  return await SessionsCollection.create({
-    userId: session.userId,
-    ...newSession,
-  });
+    const resetToken = jwt.sign({ sub: user._id, email: user.email }, process.env.JWT_SECRET, {
+        expiresIn: "5m"
+    });
+
+    await sendMail({
+        from: "lilihichka@seznam.cz",
+        to: user.email,
+        subject: "Reset password", 
+        html: `<p>To reset your password please visit this <a href="http://localhost:3000/reset-password?token=${resetToken}">link</a></p>`
+    });
+    
+}
+
+export async function resetPassword(newPassword, token) {
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await userMon.findOne({ _id: decoded.sub, email: decoded.email });
+
+        if (user === null) {
+            throw createHttpError(404, "User not found!");
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await userMon.findByIdAndUpdate(user._id, { password: hashedPassword });
+    } catch (error) {
+        if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
+            throw createHttpError(401, "Token is expired or invalid");
+        }
+        throw error;
+    }
+    
 };
