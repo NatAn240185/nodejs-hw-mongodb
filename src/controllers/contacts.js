@@ -10,7 +10,8 @@ import createHttpError from 'http-errors';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import * as fs from "node:fs/promises";
-import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
+import { saveFileToCloudinary } from "../utils/saveFileToCloudinary.js.js";
+import { getEnvVar } from '../utils/getEnvVar.js';
 
 const router = express.Router();
 
@@ -51,36 +52,36 @@ export async function getContactsIdControllers (req, res) {
       data: contact,
     });
 };
+export const createContactController = async (req, res, next) => {
+  const { contactId } = req.params;
+  const photo = req.file;
 
-export async function createContactController(req, res) {
+  let photoUrl;
 
-  let photo;
-  
-  if (req.file) {
-      const savePhotoCloudinary = await uploadToCloudinary(req.file.path);
-      await fs.unlink(req.file.path);
-      photo = savePhotoCloudinary.secure_url;
+  if (photo) {
+    if (getEnvVar('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
     }
+  }
 
-  const contact = {
-    name: req.body.name,
-    phoneNumber: req.body.phoneNumber,
-    email: req.body.email,
-    isFavourite: req.body.isFavourite,
-    contactType: req.body.contactType,
-    userId: req.user._id,
-    photo,
-  };
-
-  const result = await createContact(contact);
-
-  res.status(201).send({
-    status: 201,
-    message: "Successfully created a contact!",
-    data: result
+  const result = await updateContact(contactId, {
+    ...req.body,
+    photo: photoUrl,
   });
 
-}
+  if (!result) {
+    next(createHttpError(404, 'Contact not found'));
+    return;
+  }
+
+  res.json({
+    status: 200,
+    message: `Successfully patched a contact`,
+    data: result.student,
+  });
+};
 
 export async function deleteContactController(req, res) {
   const { contactId } = req.params;
@@ -102,7 +103,7 @@ export async function updateContactController(req, res) {
     let photo;
   
   if (req.file) {
-      const savePhotoCloudinary = await uploadToCloudinary(req.file.path);
+      const savePhotoCloudinary = await saveFileToCloudinary(req.file.path);
       await fs.unlink(req.file.path);
       photo = savePhotoCloudinary.secure_url;
     }
