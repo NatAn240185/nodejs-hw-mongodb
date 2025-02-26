@@ -9,6 +9,41 @@ import express from 'express';
 import createHttpError from 'http-errors';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
+import { getEnvVar } from '../utils/getEnvVar.js';
+
+
+export const patchContactController = async (req, res, next) => {
+  const { contactId } = req.params;
+  const photo = req.file;
+
+  let photoUrl;
+
+  if (photo) {
+    if (getEnvVar('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
+  }
+
+  const result = await updateContact(contactId, {
+    ...req.body,
+    photo: photoUrl,
+  });
+
+  if (!result) {
+    next(createHttpError(404, 'Contact not found'));
+    return;
+  }
+
+  res.json({
+    status: 200,
+    message: `Successfully patched a contact!`,
+    data: result.contact,
+  });
+};
+
 
 const router = express.Router();
 router.use(express.json());
@@ -23,7 +58,7 @@ export async function getContactsControllers(req, res, next) {
       perPage,
       sortBy,
       sortOrder,
-      userId: req.user._id, // 🔥 Додаємо userId у запит
+      userId: req.user._id, 
     });
 
     res.status(200).json({
@@ -58,7 +93,7 @@ export async function createContactController(req, res, next) {
   try {
     const contact = {
       ...req.body,
-      userId: req.user._id, // 🔥 Додаємо userId автоматично
+      userId: req.user._id,
     };
 
     const result = await createContact(contact);
@@ -75,7 +110,7 @@ export async function createContactController(req, res, next) {
 
 export async function deleteContactController(req, res, next) {
   try {
-    const contact = await deleteContact(req.params.contactId, req.user._id); // 🔥 Оновлено
+    const contact = await deleteContact(req.params.contactId, req.user._id);
 
     if (!contact) {
       throw createHttpError(404, 'Contact not found');
