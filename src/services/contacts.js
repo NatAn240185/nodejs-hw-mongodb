@@ -1,13 +1,13 @@
 import { Contact } from "../models/contact.js";
 
-export const getAllContacts = async ({ userId, page, perPage, sortBy, sortOrder }) => {
+export const getAllContacts = async ({ page, perPage, sortBy, sortOrder, userId }) => {
   const skip = page > 0 ? (page - 1) * perPage : 0;
 
-  const contactQuery = { userId }; // Фільтрація за userId
+  const contactQuery = Contact.find({ userId });
 
   const [total, data] = await Promise.all([
     Contact.countDocuments(contactQuery),
-    Contact.find(contactQuery) // Додаємо фільтр userId
+    contactQuery
       .sort({ [sortBy]: sortOrder })
       .skip(skip)
       .limit(perPage),
@@ -26,18 +26,18 @@ export const getAllContacts = async ({ userId, page, perPage, sortBy, sortOrder 
     };
 };
 
-export const getContactById = async (contactId, userId) => {
-  return Contact.findOne({ _id: contactId, userId }); // Заміна findById на findOne з userId
+export const getContactById = async (contactId) => {
+  return Contact.findById(contactId);
 };
 
 export const createContact = async (contact) => {
   return Contact.create(contact);
 };
 
-export const deleteContact = async (contactId, userId) => {
-  return Contact.findOneAndDelete({ _id: contactId, userId }); // Заміна findByIdAndDelete на findOneAndDelete
+export const deleteContact = async (contactId) => {
+  return Contact.findByIdAndDelete(contactId);
 };
 
-export const updateContact = async (contactId, userId, contact) => {
-  return Contact.findOneAndUpdate({ _id: contactId, userId }, contact, { new: true }); // Заміна findByIdAndUpdate на findOneAndUpdate
+export const updateContact = async (contactId, contact) => {
+  return Contact.findByIdAndUpdate(contactId, contact, { new: true });
 };

@@ -28,3 +28,6 @@ User.methods.toJSON = function() {
 const userMon = mongoose.model("User", User);
 
 export { userMon };
+
+
+
