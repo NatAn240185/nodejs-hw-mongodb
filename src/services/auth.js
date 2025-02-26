@@ -3,9 +3,6 @@ import createHttpError from "http-errors";
 import bcrypt from "bcryptjs";
 import { sessionMon } from "../models/session.js";
 import crypto from "node:crypto";
-import jwt from "jsonwebtoken";
-import { sendMail } from "../utils/sendMail.js";
-
 
 export async function registerUser(payload) {
     const existingUser = await userMon.findOne({ email: payload.email });
@@ -73,44 +70,3 @@ export async function refreshSession(sessionId, refreshToken) {
         refreshTokenValidUntil: new Date(Date.now() + 720 * 60 * 60 * 1000),
     });
 }
-
-export async function sendResetPassword(email) {
-    const user = await userMon.findOne({ email });
-    
-    if (user === null) {
-        throw createHttpError(404, "User not found!");
-    }
-
-    const resetToken = jwt.sign({ sub: user._id, email: user.email }, process.env.JWT_SECRET, {
-        expiresIn: "5m"
-    });
-
-    await sendMail({
-        from: "lilihichka@seznam.cz",
-        to: user.email,
-        subject: "Reset password", 
-        html: `<p>To reset your password please visit this <a href="http://localhost:3000/reset-password?token=${resetToken}">link</a></p>`
-    });
-    
-}
-
-export async function resetPassword(newPassword, token) {
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await userMon.findOne({ _id: decoded.sub, email: decoded.email });
-
-        if (user === null) {
-            throw createHttpError(404, "User not found!");
-        }
-
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        await userMon.findByIdAndUpdate(user._id, { password: hashedPassword });
-    } catch (error) {
-        if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
-            throw createHttpError(401, "Token is expired or invalid");
-        }
-        throw error;
-    }
-    
-};
