@@ -10,6 +10,7 @@ import cookieParser from "cookie-parser";
 import authRouter from "./routers/auth.js";
 import { authenticate } from "./middlewares/authenticate.js";
 
+
 const app = express();
 
 app.use("/photo", express.static(path.resolve("src/public/photo")));
