@@ -6,6 +6,15 @@ import { sendEmail } from '../utils/sendMail.js';
 export async function requestResetEmailController(req, res) {
     try {
         const { email } = req.body;
+
+        // Логування для перевірки наявності email в тілі запиту
+        console.log("Request Body:", req.body);
+        if (!email) {
+            return res.status(400).json({
+                message: "Email is required",
+            });
+        }
+
         console.log("EMAIL REQUEST:", email); // Додаємо логування
 
         const resetToken = await requestResetToken(email); // Отримуємо токен
@@ -30,7 +39,7 @@ export async function requestResetEmailController(req, res) {
         });
     }
 }
-  
+
 export const resetPasswordController = async (req, res) => {
   await resetPassword(req.body);
   res.json({
