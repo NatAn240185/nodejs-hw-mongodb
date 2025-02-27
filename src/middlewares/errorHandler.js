@@ -6,6 +6,7 @@ export function errorHandler(error, req, res, next) {
       .status(error.statusCode)
       .send({ status: error.statusCode, message: error.message });
   }
+  next(error); // передати помилку наступному обробнику
 
   res.status(500).send({ status: 500, message: 'Something went wrong' });
 }
