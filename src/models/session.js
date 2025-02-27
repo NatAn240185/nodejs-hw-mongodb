@@ -11,4 +11,3 @@ const sessionSchema = new mongoose.Schema({
 const sessionMon = mongoose.model("Session", sessionSchema);
 
 export { sessionMon };
-

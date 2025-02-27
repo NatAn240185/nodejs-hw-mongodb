@@ -1,4 +1,5 @@
 import cors from 'cors';
+import path from "node:path";
 import express from 'express';
 import 'dotenv/config';
 import pino from 'pino-http';
@@ -12,6 +13,7 @@ import { authenticate } from "./middlewares/authenticate.js";
 
 const app = express();
 
+app.use("/photo", express.static(path.resolve("src/public/photo")));
 
 app.use(cors());
 
@@ -41,7 +43,7 @@ app.use(errorHandler);
 
 export function setupServer() {
         try {
-            const PORT = process.env.PORT || 3000;
+          const PORT = process.env.PORT || 3000;
             app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
         });
