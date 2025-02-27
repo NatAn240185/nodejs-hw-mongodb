@@ -1,6 +1,16 @@
 import { loginUser, logoutUser, refreshSession, registerUser, requestResetToken, resetPassword } from "../services/auth.js";
 
 
+export async function requestResetEmailController(req, res) {
+    const { email } = req.body;
+    await requestResetToken(email); // Викликаємо сервісну функцію
+  
+    res.status(200).json({
+      message: 'Reset token sent to email!',
+      status: 200,
+    });
+  }
+  
 export const resetPasswordController = async (req, res) => {
   await resetPassword(req.body);
   res.json({
