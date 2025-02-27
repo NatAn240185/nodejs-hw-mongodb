@@ -21,3 +21,4 @@ export const sendEmail = async (options) => {
     throw error;
   }
 };
+
