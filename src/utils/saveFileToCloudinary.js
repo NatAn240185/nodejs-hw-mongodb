@@ -1,7 +1,7 @@
 import cloudinary from 'cloudinary';
 import fs from 'node:fs/promises';
 import dotenv from 'dotenv'; 
-import { CLOUDINARY } from '../constants/index.js';
+
 dotenv.config();
 
 

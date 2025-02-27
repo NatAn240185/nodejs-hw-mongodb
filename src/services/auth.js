@@ -5,11 +5,11 @@ import bcrypt from "bcryptjs";
 import { sessionMon } from "../models/session.js";
 import crypto from "node:crypto";
 import { SMTP } from '../constants/index.js';
-import { getEnvVar } from '../utils/getEnvVar.js';
+import { getEnvVar } from '../utils/getEnvVar.js';
 import { sendEmail } from '../utils/sendMail.js';
 
 export const requestResetToken = async (email) => {
-  const user = await UsersCollection.findOne({ email });
+  const user = await userMon.findOne({ email });
   if (!user) {
     throw createHttpError(404, 'User not found');
   }
@@ -109,7 +109,7 @@ export const resetPassword = async (payload) => {
       throw err;
     }
   
-    const user = await UsersCollection.findOne({
+    const user = await userMon.findOne({
       email: entries.email,
       _id: entries.sub,
     });
@@ -120,7 +120,7 @@ export const resetPassword = async (payload) => {
   
     const encryptedPassword = await bcrypt.hash(payload.password, 10);
   
-    await UsersCollection.updateOne(
+    await userMon.updateOne(
       { _id: user._id },
       { password: encryptedPassword },
     );
