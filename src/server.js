@@ -12,6 +12,7 @@ import { authenticate } from "./middlewares/authenticate.js";
 
 
 const app = express();
+app.use(express.json()); 
 
 app.use("/photo", express.static(path.resolve("src/public/photo")));
 
