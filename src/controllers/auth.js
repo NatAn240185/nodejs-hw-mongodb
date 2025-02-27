@@ -1,15 +1,35 @@
 import { loginUser, logoutUser, refreshSession, registerUser, requestResetToken, resetPassword } from "../services/auth.js";
+import { sendEmail } from '../utils/sendMail.js';
+
 
 
 export async function requestResetEmailController(req, res) {
-    const { email } = req.body;
-    await requestResetToken(email); // Викликаємо сервісну функцію
-  
-    res.status(200).json({
-      message: 'Reset token sent to email!',
-      status: 200,
-    });
-  }
+    try {
+        const { email } = req.body;
+        console.log("EMAIL REQUEST:", email); // Додаємо логування
+
+        const resetToken = await requestResetToken(email); // Отримуємо токен
+
+        const mailOptions = {
+            from: process.env.SMTP_FROM, // Адреса відправника
+            to: email,
+            subject: "Password Reset Request",
+            text: `Here is your password reset link: https://yourfrontend.com/reset-password?token=${resetToken}`,
+        };
+
+        await sendEmail(mailOptions);
+
+        res.status(200).json({
+            message: "Reset token sent to email!",
+            status: 200,
+        });
+    } catch (error) {
+        console.error("EMAIL SENDING ERROR:", error);
+        res.status(500).json({
+            message: "Failed to send reset email",
+        });
+    }
+}
   
 export const resetPasswordController = async (req, res) => {
   await resetPassword(req.body);
